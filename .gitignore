@@ -1,3 +1,21 @@
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+.DS_Store
+*.iws
+.gradle/
+.sonar-ide.properties
+build/
+/bin
+.classpath
+.project
+.idea
+*.iml
+*.ipr
+
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -10,3 +28,5 @@ buildNumber.properties
 
 # Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
 !/.mvn/wrapper/maven-wrapper.jar
+/.gradle/
+
