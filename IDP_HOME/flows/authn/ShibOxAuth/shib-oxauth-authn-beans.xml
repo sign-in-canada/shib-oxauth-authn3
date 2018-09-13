@@ -11,7 +11,10 @@
 
        default-init-method="initialize"
        default-destroy-method="destroy">
-
+    <!-- OpenId oxAuth client -->
+    <bean id="ShibOxAuthAuthServlet"
+      class="org.gluu.idp.externalauth.openid.client.IdpAuthClient" scope="singleton" />
+    
     <!-- Based off of system/flows/authn/external-authn-beans.xml -->
     <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer"
           p:placeholderPrefix="%{" p:placeholderSuffix="}" />
