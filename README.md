@@ -19,10 +19,10 @@ Installation
 #### Overview
 
 1. Copy the Spring Webflow files, jsp, and included jar files into the IDP_HOME.
-1. Update the IdP's `web.xml`. (optional)
-1. Update the IdP's `idp.properties` file.
-1. Update the IdP's `general-authn.xml` file.
-1. Rebuild the war file.
+2. Update the IdP's `web.xml`. (optional)
+3. Update the IdP's `idp.properties` file.
+4. Update the IdP's `general-authn.xml` file.
+5. Rebuild the war file.
 
 #### Copy the Spring Webflow files into the IDP_HOME
 Copy the two xml files from the IDP_HOME directory (in the src tree) to the corresponding layout in your Shibboleth IdP home directory.

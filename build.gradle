@@ -2,6 +2,7 @@ apply plugin: 'distribution'
 apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'maven-publish'
 
 defaultTasks 'clean', 'distZip', 'distTar'
 
@@ -48,6 +49,14 @@ distributions {
         baseName = 'shib-oxauth-authn3'
         contents {
             from { 'build/dist-tmp' }
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
         }
     }
 }
