@@ -59,6 +59,8 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     public void init(final ServletConfig config) throws ServletException {
         super.init(config);
 
+        this.idpAuthClient = new IdpAuthClient();
+
         final ApplicationContext ac = (ApplicationContext) config.getServletContext()
                 .getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
 
@@ -98,7 +100,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             processAuthorizationResponse(request, response, authenticationKey);
 
         } catch (final ExternalAuthenticationException ex) {
-            logger.warn("Error processing ShibCas authentication request", ex);
+            logger.warn("Error processing ShibOxAuth authentication request", ex);
             loadErrorPage(request, response);
 
         } catch (final Exception ex) {
@@ -162,8 +164,8 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     private void buildTranslators(final Environment environment) {
         translators.add(new AuthenticatedNameTranslator());
 
-        final String casToShibTranslators = StringUtils.defaultString(environment.getProperty("shib.oxauth.oxAuthToShibTranslator", ""));
-        for (final String classname : StringUtils.split(casToShibTranslators, ';')) {
+        final String oxAuthToShibTranslators = StringUtils.defaultString(environment.getProperty("shib.oxauth.oxAuthToShibTranslator", ""));
+        for (final String classname : StringUtils.split(oxAuthToShibTranslators, ';')) {
             try {
                 logger.debug("Loading translator class {}", classname);
                 final Class<?> c = Class.forName(classname);
@@ -174,7 +176,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
                 translators.add(e);
                 logger.debug("Added translator class {}", classname);
             } catch (final Exception ex) {
-                logger.error("Error building cas to shib translator with name: " + classname, ex);
+                logger.error("Error building oxAuth to Shib translator with name: " + classname, ex);
             }
         }
     }

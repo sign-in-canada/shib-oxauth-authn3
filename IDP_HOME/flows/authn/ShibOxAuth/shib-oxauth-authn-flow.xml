@@ -30,7 +30,6 @@
         <transition on="SubjectCanonicalizationError" to="ReselectFlow" />
     </subflow-state>
 
-
     <bean-import resource="shib-oxauth-authn-beans.xml" />
 
 </flow>
