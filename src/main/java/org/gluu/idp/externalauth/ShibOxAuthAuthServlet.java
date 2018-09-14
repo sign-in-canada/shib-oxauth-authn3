@@ -163,7 +163,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             final WebContext webContext = new J2EContext(request, response);
 
             final Map<String, String> customResponseHeaders = new HashMap<String, String>();
-            final String convId = request.getAttribute(ExternalAuthentication.CONVERSATION_KEY).toString();
+            final String convId = request.getParameter(ExternalAuthentication.CONVERSATION_KEY);
             customResponseHeaders.put(OXAUTH_PARAM_CONV_ID, convId);
             
             final Map<String, String> customParameters = new HashMap<String, String>();
