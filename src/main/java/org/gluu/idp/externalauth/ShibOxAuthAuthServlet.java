@@ -12,7 +12,9 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.commons.lang.StringUtils;
 import org.gluu.idp.externalauth.openid.client.IdpAuthClient;
@@ -75,7 +77,20 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             final WebContext webContext = new J2EContext(request, response);
 
             // Start external authentication
-            final String authenticationKey = ExternalAuthentication.startExternalAuthentication(request);
+            final HttpServletRequestWrapper wrappedRequest = new HttpServletRequestWrapper(request) {
+
+                @Override
+                public String getParameter(String name) {
+                    if (OXAUTH_PARAM_CONV_ID.equals(name)) {
+                        return super.getHeader(name);
+                    }
+
+                    return super.getParameter(name);
+                }
+                
+            };
+            final String authenticationKey = ExternalAuthentication.startExternalAuthentication(wrappedRequest);
+            
 
             // Get external authentication properties
             final boolean force = Boolean.parseBoolean(request.getAttribute(ExternalAuthentication.FORCE_AUTHN_PARAM).toString());
