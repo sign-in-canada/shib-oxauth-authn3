@@ -48,6 +48,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     private final Logger logger = LoggerFactory.getLogger(ShibOxAuthAuthServlet.class);
 
     private final String OXAUTH_PARAM_ENTITY_ID = "entityId";
+    private final String OXAUTH_PARAM_CONV_ID = "convId";
 
     @Autowired
     @Qualifier("idpOxAuthClient")
@@ -141,12 +142,16 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
         try {
             // Web context
             final WebContext webContext = new J2EContext(request, response);
+
+            final Map<String, String> customResponseHeaders = new HashMap<String, String>();
+            final String convId = request.getAttribute(ExternalAuthentication.CONVERSATION_KEY).toString();
+            customResponseHeaders.put(OXAUTH_PARAM_CONV_ID, convId);
             
             final Map<String, String> customParameters = new HashMap<String, String>();
             final String relayingPartyId = request.getAttribute(ExternalAuthentication.RELYING_PARTY_PARAM).toString();
             customParameters.put(OXAUTH_PARAM_ENTITY_ID, relayingPartyId);
 
-            final String loginUrl = idpAuthClient.getRedirectionUrl(webContext, customParameters);
+            final String loginUrl = idpAuthClient.getRedirectionUrl(webContext, customResponseHeaders, customParameters);
             logger.debug("Generated redirection Url", loginUrl);
 
             logger.debug("loginUrl: {}", loginUrl);
