@@ -75,6 +75,7 @@ Register the module with the IdP by adding the `authn/ShibOxAuth` bean in `IDP_H
     <util:list id="shibboleth.AvailableAuthenticationFlows">
 
         <bean id="authn/oxAuth" parent="shibboleth.AuthenticationFlow"
+                p:forcedAuthenticationSupported="true"
                 p:nonBrowserSupported="false" />
 ...
 ```

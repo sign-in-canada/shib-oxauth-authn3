@@ -40,7 +40,7 @@ import net.shibboleth.idp.authn.ExternalAuthenticationException;
  * @author Yuriy Movchan
  * @version 0.1, 09/13/2018
  */
-@WebServlet(name = "ShibOxAuthAuthServlet", urlPatterns = { "/Authn/ExtOxAuth/*" })
+@WebServlet(name = "ShibOxAuthAuthServlet", urlPatterns = { "/Authn/oxAuth/*" })
 public class ShibOxAuthAuthServlet extends HttpServlet {
 
     private static final long serialVersionUID = -4864851392327422662L;
@@ -100,7 +100,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             processAuthorizationResponse(request, response, authenticationKey);
 
         } catch (final ExternalAuthenticationException ex) {
-            logger.warn("Error processing ShibOxAuth authentication request", ex);
+            logger.warn("Error processing oxAuth authentication request", ex);
             loadErrorPage(request, response);
 
         } catch (final Exception ex) {
