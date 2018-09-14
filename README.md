@@ -45,7 +45,7 @@ Example snippet `web.xml`:
     </servlet>
     <servlet-mapping>
         <servlet-name>ShibOxAuth Auth Servlet</servlet-name>
-        <url-pattern>/Authn/ExtOxAuth/*</url-pattern>
+        <url-pattern>/Authn/oxAuth/*</url-pattern>
     </servlet-mapping>
 ...
 ```
