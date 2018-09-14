@@ -82,7 +82,11 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
                 @Override
                 public String getParameter(String name) {
                     if (OXAUTH_PARAM_CONV_ID.equals(name)) {
-                        return super.getHeader(name);
+                        String convId = super.getHeader(name);
+                        
+                        if (convId != null) {
+                            return convId;
+                        }
                     }
 
                     return super.getParameter(name);
