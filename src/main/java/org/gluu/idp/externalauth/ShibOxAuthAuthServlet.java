@@ -30,6 +30,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.context.WebApplicationContext;
 import org.xdi.context.J2EContext;
 import org.xdi.context.WebContext;
+import org.xdi.oxauth.model.exception.InvalidJwtException;
+import org.xdi.oxauth.model.jwt.Jwt;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.ExternalAuthentication;
@@ -50,7 +52,6 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     private final Logger logger = LoggerFactory.getLogger(ShibOxAuthAuthServlet.class);
 
     private final String OXAUTH_PARAM_ENTITY_ID = "entityId";
-    private final String OXAUTH_PARAM_CONV_ID = "convId";
 
     @Autowired
     @Qualifier("idpOxAuthClient")
@@ -74,15 +75,37 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException {
         try {
             // Web context
-            final WebContext webContext = new J2EContext(request, response);
+            final WebContext context = new J2EContext(request, response);
+            final boolean authorizationResponse = idpAuthClient.isAuthorizationResponse(context);
 
-            final String authenticationKey = ExternalAuthentication.startExternalAuthentication(request);
+            HttpServletRequest externalRequest = request;
+            if (authorizationResponse) {
+                try {
+                    final Jwt jwt = Jwt.parse(idpAuthClient.getRequestState(context));
+
+                    externalRequest = new HttpServletRequestWrapper(request) {
+                        @Override
+                        public String getParameter(String name) {
+                            if (jwt.getClaims().hasClaim(name)) {
+                                return jwt.getClaims().getClaimAsString(name);
+                            }
+
+                            return super.getParameter(name);
+                        }
+                    };
+                } catch (InvalidJwtException ex) {
+                    logger.debug("State is not in JWT format", ex);
+                }
+            }
+
+            // Get authentication key from request 
+            final String authenticationKey = ExternalAuthentication.startExternalAuthentication(externalRequest);
 
             // Get external authentication properties
             final boolean force = Boolean.parseBoolean(request.getAttribute(ExternalAuthentication.FORCE_AUTHN_PARAM).toString());
 
             // It's an authentication
-            if (!idpAuthClient.isAuthorizationResponse(webContext)) {
+            if (!authorizationResponse) {
                 logger.debug("Initiating oxAuth login redirect");
                 startLoginRequest(request, response, force);
                 return;
@@ -91,7 +114,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             logger.info("Procession authorization response");
 
             // Check if oxAuth request state is correct
-            if (!idpAuthClient.isValidRequestState(webContext)) {
+            if (!idpAuthClient.isValidRequestState(context)) {
                 logger.error("The state in session and in request are not equals");
 
                 // Re-init login page
@@ -115,12 +138,12 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             throws ExternalAuthenticationException, IOException {
         try {
             // Web context
-            final WebContext webContext = new J2EContext(request, response);
+            final WebContext context = new J2EContext(request, response);
 
-            final OpenIdCredentials openIdCredentials = idpAuthClient.getCredentials(webContext);
+            final OpenIdCredentials openIdCredentials = idpAuthClient.getCredentials(context);
             logger.debug("Client name : '{}'", openIdCredentials.getClientName());
 
-            final UserProfile userProfile = idpAuthClient.getUserProfile(openIdCredentials, webContext);
+            final UserProfile userProfile = idpAuthClient.getUserProfile(openIdCredentials, context);
             logger.debug("User profile : {}", userProfile);
 
             if (userProfile == null) {
@@ -142,7 +165,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     protected void startLoginRequest(final HttpServletRequest request, final HttpServletResponse response, final Boolean force) {
         try {
             // Web context
-            final WebContext webContext = new J2EContext(request, response);
+            final WebContext context = new J2EContext(request, response);
 
             final Map<String, String> customResponseHeaders = new HashMap<String, String>();
             final String convId = request.getParameter(ExternalAuthentication.CONVERSATION_KEY);
@@ -152,7 +175,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             final String relayingPartyId = request.getAttribute(ExternalAuthentication.RELYING_PARTY_PARAM).toString();
             customParameters.put(OXAUTH_PARAM_ENTITY_ID, relayingPartyId);
 
-            final String loginUrl = idpAuthClient.getRedirectionUrl(webContext, customResponseHeaders, customParameters);
+            final String loginUrl = idpAuthClient.getRedirectionUrl(context, customResponseHeaders, customParameters);
             logger.debug("Generated redirection Url", loginUrl);
 
             logger.debug("loginUrl: {}", loginUrl);
