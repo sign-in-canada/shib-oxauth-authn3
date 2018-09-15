@@ -76,24 +76,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             // Web context
             final WebContext webContext = new J2EContext(request, response);
 
-            // Start external authentication
-            final HttpServletRequestWrapper wrappedRequest = new HttpServletRequestWrapper(request) {
-
-                @Override
-                public String getParameter(String name) {
-                    if (ExternalAuthentication.CONVERSATION_KEY.equals(name)) {
-                        String convId = super.getHeader(OXAUTH_PARAM_CONV_ID);
-                        if (convId != null) {
-                            return convId;
-                        }
-                    }
-
-                    return super.getParameter(name);
-                }
-                
-            };
-            final String authenticationKey = ExternalAuthentication.startExternalAuthentication(wrappedRequest);
-            
+            final String authenticationKey = ExternalAuthentication.startExternalAuthentication(request);
 
             // Get external authentication properties
             final boolean force = Boolean.parseBoolean(request.getAttribute(ExternalAuthentication.FORCE_AUTHN_PARAM).toString());
@@ -163,7 +146,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
 
             final Map<String, String> customResponseHeaders = new HashMap<String, String>();
             final String convId = request.getParameter(ExternalAuthentication.CONVERSATION_KEY);
-            customResponseHeaders.put(OXAUTH_PARAM_CONV_ID, convId);
+            customResponseHeaders.put(ExternalAuthentication.CONVERSATION_KEY, convId);
             
             final Map<String, String> customParameters = new HashMap<String, String>();
             final String relayingPartyId = request.getAttribute(ExternalAuthentication.RELYING_PARTY_PARAM).toString();
