@@ -74,17 +74,18 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException {
         try {
+            // Web context
+            final WebContext context = new J2EContext(request, response);
+
             final String requestUrl = request.getRequestURL().toString();
             logger.trace("Get request to: '{}'", requestUrl);
 
             boolean logoutEndpoint = requestUrl.endsWith("/logout");
             if (logoutEndpoint) {
-                processLogoutRequest();
+                processLogoutRequest(context);
                 return;
             }
 
-            // Web context
-            final WebContext context = new J2EContext(request, response);
             final boolean authorizationResponse = idpAuthClient.isAuthorizationResponse(context);
 
             HttpServletRequest externalRequest = request;
