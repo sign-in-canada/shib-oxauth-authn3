@@ -74,6 +74,15 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException {
         try {
+            final String requestUrl = request.getRequestURL().toString();
+            logger.trace("Get request to: '{}'", requestUrl);
+
+            boolean logoutEndpoint = requestUrl.endsWith("/logout");
+            if (logoutEndpoint) {
+                processLogoutRequest();
+                return;
+            }
+
             // Web context
             final WebContext context = new J2EContext(request, response);
             final boolean authorizationResponse = idpAuthClient.isAuthorizationResponse(context);
@@ -180,6 +189,21 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
 
             logger.debug("loginUrl: {}", loginUrl);
             response.sendRedirect(loginUrl);
+        } catch (final IOException ex) {
+            logger.error("Unable to redirect to oxAuth from ShibOxAuth", ex);
+        }
+    }
+
+    protected void processLogoutRequest(final HttpServletRequest request, final HttpServletResponse response, final Boolean force) {
+        try {
+            // Web context
+            final WebContext context = new J2EContext(request, response);
+
+            final String logoutUrl = idpAuthClient.getLogoutRedirectionUrl(context);
+            logger.debug("Generated logout redirection Url", logoutUrl);
+
+            logger.debug("logoutUrl: {}", logoutUrl);
+            response.sendRedirect(logoutUrl);
         } catch (final IOException ex) {
             logger.error("Unable to redirect to oxAuth from ShibOxAuth", ex);
         }
