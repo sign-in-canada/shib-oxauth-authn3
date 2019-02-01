@@ -78,7 +78,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             logger.trace("Get request to: '{}'", requestUrl);
 
             boolean logoutEndpoint = requestUrl.endsWith("/logout");
-            if (logoutEndpoint) {
+            if (logoutEndpoint ) {
                 processLogoutRequest(request, response);
                 return;
             }
@@ -198,12 +198,21 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
         try {
             // Web context
             final WebContext context = new J2EContext(request, response);
+            final boolean authorized = idpAuthClient.isAuthorized(context);
+            if (!authorized) {
+                logger.debug("Client is not authorized (no id_token in session)");
+                return;
+            }
 
             final String logoutUrl = idpAuthClient.getLogoutRedirectionUrl(context);
             logger.debug("Generated logout redirection Url", logoutUrl);
+            
 
             logger.debug("logoutUrl: {}", logoutUrl);
             response.sendRedirect(logoutUrl);
+
+            idpAuthClient.clearAuthorized(context);
+            logger.debug("Client authorization is removed (set null id_token in session)");
         } catch (final IOException ex) {
             logger.error("Unable to redirect to oxAuth from ShibOxAuth", ex);
         }
