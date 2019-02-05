@@ -225,7 +225,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
         try {
             // Web context
             final WebContext context = new J2EContext(request, response);
-            final Boolean sendEndSession = idpAuthClient.getAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST);
+            final Object sendEndSession = idpAuthClient.getAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST);
             if (Boolean.TRUE.equals(sendEndSession)) {
                 idpAuthClient.setAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST, null);
                 logger.debug("Client send end_session request. Ignoring OP initiated logout request");
