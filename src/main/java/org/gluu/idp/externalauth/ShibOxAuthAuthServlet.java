@@ -52,6 +52,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     private final Logger logger = LoggerFactory.getLogger(ShibOxAuthAuthServlet.class);
 
     private final String OXAUTH_PARAM_ENTITY_ID = "entityId";
+    private final String OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST = "sendEndSession";
 
     @Autowired
     @Qualifier("idpOxAuthClient")
@@ -213,6 +214,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             response.sendRedirect(logoutUrl);
 
             idpAuthClient.clearAuthorized(context);
+            idpAuthClient.setAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST, Boolean.TRUE);
             logger.debug("Client authorization is removed (set null id_token in session)");
         } catch (final IOException ex) {
             logger.error("Unable to redirect to oxAuth from ShibOxAuth", ex);
@@ -223,6 +225,12 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
         try {
             // Web context
             final WebContext context = new J2EContext(request, response);
+            final Boolean sendEndSession = idpAuthClient.getAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST);
+            if (Boolean.TRUE.equals(sendEndSession)) {
+                idpAuthClient.setAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST, null);
+                logger.debug("Client send end_session request. Ignoring OP initiated logout request");
+                return;
+            }
 
             final String logoutUrl = "/idp/profile/Logout";
             logger.debug("logoutUrl: {}", logoutUrl);
