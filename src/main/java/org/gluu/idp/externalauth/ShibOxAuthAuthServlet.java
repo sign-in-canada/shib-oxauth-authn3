@@ -191,7 +191,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             final String relayingPartyId = request.getAttribute(ExternalAuthentication.RELYING_PARTY_PARAM).toString();
             customParameters.put(OXAUTH_PARAM_ENTITY_ID, relayingPartyId);
 
-            final String loginUrl = idpAuthClient.getRedirectionUrl(context, customResponseHeaders, customParameters);
+            final String loginUrl = idpAuthClient.getRedirectionUrl(context, customResponseHeaders, customParameters, force);
             logger.debug("Generated redirection Url", loginUrl);
 
             logger.debug("loginUrl: {}", loginUrl);
