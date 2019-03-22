@@ -30,7 +30,7 @@ configurations.compile.transitive = false
 
 dependencies {
     compile "org.xdi:oxauth-client:$project.oxAuthVersion"
-    compile "org.xdi:openid-auth-client:$project.oxAuthVersion"
+    compile "org.xdi:oxtrust-openid-auth-client:$project.oxAuthVersion"
     compile "org.xdi:oxcore-util:$project.oxCoreVersion"
     compile "org.xdi:oxcore-ldap:$project.oxCoreVersion"
 
