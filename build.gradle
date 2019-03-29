@@ -29,10 +29,10 @@ configurations {
 configurations.compile.transitive = false
 
 dependencies {
-    compile "org.xdi:oxauth-client:$project.oxAuthVersion"
-    compile "org.xdi:oxtrust-openid-auth-client:$project.oxAuthVersion"
-    compile "org.xdi:oxcore-util:$project.oxCoreVersion"
-    compile "org.xdi:oxcore-ldap:$project.oxCoreVersion"
+    compile "org.gluu:oxauth-client:$project.oxAuthVersion"
+    compile "org.gluu:oxtrust-openid-auth-client:$project.oxAuthVersion"
+    compile "org.gluu:oxcore-util:$project.oxCoreVersion"
+    compile "org.gluu:oxcore-ldap:$project.oxCoreVersion"
 
     provided "javax.servlet:javax.servlet-api:$project.servletVersion"
     provided "net.shibboleth.idp:idp-authn-api:$project.shibIdpVersion"
