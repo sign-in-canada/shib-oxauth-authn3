@@ -23,8 +23,8 @@ public final class IdpConfiguration extends Configuration<IdpAppConfiguration, I
 	}
 
 	@Override
-	protected String getLdapConfigurationFileName() {
-		return "oxidp-ldap.properties";
+	protected String getDefaultConfigurationFileName() {
+		return "oxidp.properties";
 	}
 
 	@Override
