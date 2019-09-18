@@ -207,7 +207,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
                     }
                 }
             } catch (Exception e) {
-
+                logger.error("Unable to process to AuthnContextClassRef", e);
             }           
 
             final String loginUrl = idpAuthClient.getRedirectionUrl(context, customResponseHeaders, customParameters, force);
