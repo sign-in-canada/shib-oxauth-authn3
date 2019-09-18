@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -14,12 +15,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.commons.lang.StringUtils;
+import org.gluu.context.J2EContext;
+import org.gluu.context.WebContext;
 import org.gluu.idp.externalauth.openid.client.IdpAuthClient;
 import org.gluu.oxauth.client.auth.principal.OpenIdCredentials;
 import org.gluu.oxauth.client.auth.user.UserProfile;
+import org.gluu.oxauth.model.exception.InvalidJwtException;
+import org.gluu.oxauth.model.jwt.Jwt;
+import org.opensaml.profile.context.ProfileRequestContext;
+import org.opensaml.saml.saml2.core.AuthnContextClassRef;
+import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.RequestedAuthnContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +36,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.web.context.WebApplicationContext;
-import org.gluu.context.J2EContext;
-import org.gluu.context.WebContext;
-import org.gluu.oxauth.model.exception.InvalidJwtException;
-import org.gluu.oxauth.model.jwt.Jwt;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.ExternalAuthentication;
@@ -190,6 +194,21 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             final Map<String, String> customParameters = new HashMap<String, String>();
             final String relayingPartyId = request.getAttribute(ExternalAuthentication.RELYING_PARTY_PARAM).toString();
             customParameters.put(OXAUTH_PARAM_ENTITY_ID, relayingPartyId);
+            
+            try {
+                ProfileRequestContext prc = ExternalAuthentication.getProfileRequestContext(convId, request);
+                AuthnRequest authnRequest = (AuthnRequest) prc.getInboundMessageContext().getMessage();
+                if (null != authnRequest) {
+                    RequestedAuthnContext authnContext = authnRequest.getRequestedAuthnContext();
+                    if (null != authnContext) {
+                        String acrs = authnContext.getAuthnContextClassRefs().stream()
+                            .map(AuthnContextClassRef::getAuthnContextClassRef).collect(Collectors.joining(" "));
+                        customParameters.put("acr_values", acrs);
+                    }
+                }
+            } catch (Exception e) {
+
+            }           
 
             final String loginUrl = idpAuthClient.getRedirectionUrl(context, customResponseHeaders, customParameters, force);
             logger.debug("Generated redirection Url", loginUrl);
