@@ -85,7 +85,3 @@ task prepDist() {
 
 distTar.dependsOn prepDist
 distZip.dependsOn prepDist
-
-task wrapper(type: Wrapper) {
-    gradleVersion = project.gradleVersion
-}
