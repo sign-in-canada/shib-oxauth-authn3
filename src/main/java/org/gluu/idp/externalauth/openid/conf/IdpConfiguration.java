@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
  * @author Yuriy Movchan
  * @version 0.1, 09/13/2018
  */
-public final class IdpConfiguration extends Configuration<IdpAppConfiguration, IdpLdapAppConfiguration> {
+public final class IdpConfiguration extends ConfigurationFactory<IdpAppConfiguration, IdpLdapAppConfiguration> {
 
 	private final Logger logger = LoggerFactory.getLogger(IdpConfiguration.class);
 
