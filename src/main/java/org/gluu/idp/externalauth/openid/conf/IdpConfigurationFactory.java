@@ -10,15 +10,15 @@ import org.gluu.conf.service.ConfigurationFactory;
  * @author Yuriy Movchan
  * @version 0.1, 09/13/2018
  */
-public final class IdpConfiguration extends ConfigurationFactory<IdpAppConfiguration, IdpLdapAppConfiguration> {
+public final class IdpConfigurationFactory extends ConfigurationFactory<IdpAppConfiguration, IdpAppConfigurationEntry> {
 
-	private final Logger logger = LoggerFactory.getLogger(IdpConfiguration.class);
+	private final Logger logger = LoggerFactory.getLogger(IdpConfigurationFactory.class);
 
 	private static class ConfigurationSingleton {
-		static IdpConfiguration INSTANCE = new IdpConfiguration();
+		static IdpConfigurationFactory INSTANCE = new IdpConfigurationFactory();
 	}
 
-	public static IdpConfiguration instance() {
+	public static IdpConfigurationFactory instance() {
 		return ConfigurationSingleton.INSTANCE;
 	}
 
@@ -28,8 +28,8 @@ public final class IdpConfiguration extends ConfigurationFactory<IdpAppConfigura
 	}
 
 	@Override
-	protected Class<IdpLdapAppConfiguration> getAppConfigurationType() {
-		return IdpLdapAppConfiguration.class;
+	protected Class<IdpAppConfigurationEntry> getAppConfigurationType() {
+		return IdpAppConfigurationEntry.class;
 	}
 
 	@Override
