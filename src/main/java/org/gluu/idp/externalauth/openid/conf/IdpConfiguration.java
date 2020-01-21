@@ -1,8 +1,8 @@
 package org.gluu.idp.externalauth.openid.conf;
 
-import org.gluu.oxauth.client.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.gluu.conf.service.ConfigurationFactory;
 
 /**
  * IDP configuration factory
