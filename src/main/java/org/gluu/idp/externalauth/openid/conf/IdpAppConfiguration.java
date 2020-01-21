@@ -1,6 +1,6 @@
 package org.gluu.idp.externalauth.openid.conf;
 
-import org.gluu.oxauth.client.conf.AppConfiguration;
+import org.gluu.conf.model.AppConfiguration;
 
 /**
  * Idp application configuration

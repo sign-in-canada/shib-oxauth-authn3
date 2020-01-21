@@ -1,6 +1,6 @@
 package org.gluu.idp.externalauth.openid.conf;
 
-import org.gluu.oxauth.client.conf.LdapAppConfiguration;
+import org.gluu.conf.model.AppConfigurationEntry;
 import org.gluu.persist.annotation.AttributeName;
 import org.gluu.persist.annotation.JsonObject;
 
@@ -10,7 +10,7 @@ import org.gluu.persist.annotation.JsonObject;
  * @author Yuriy Movchan
  * @version 0.1, 09/13/2018
  */
-public class IdpLdapAppConfiguration extends LdapAppConfiguration {
+public class IdpAppConfigurationEntry extends AppConfigurationEntry {
 
     private static final long serialVersionUID = -7301311833970330177L;
 
@@ -18,7 +18,6 @@ public class IdpLdapAppConfiguration extends LdapAppConfiguration {
     @AttributeName(name = "oxConfApplication")
     private IdpAppConfiguration application;
 
-    @Override
     public IdpAppConfiguration getApplication() {
         return application;
     }
