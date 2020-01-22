@@ -22,4 +22,8 @@ public class IdpAuthClient extends OpenIdClient<IdpAppConfiguration, IdpAppConfi
 		super(IdpConfigurationFactory.instance());
 	}
 
+	public IdpAuthClient(final IdpConfigurationFactory idpConfigurationFactory) {
+		super(idpConfigurationFactory);
+	}
+
 }
