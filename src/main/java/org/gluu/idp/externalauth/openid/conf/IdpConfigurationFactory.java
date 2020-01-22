@@ -12,7 +12,8 @@ import org.gluu.conf.service.ConfigurationFactory;
  */
 public final class IdpConfigurationFactory extends ConfigurationFactory<IdpAppConfiguration, IdpAppConfigurationEntry> {
 
-	private final Logger logger = LoggerFactory.getLogger(IdpConfigurationFactory.class);
+	@SuppressWarnings("unused")
+	private final Logger LOG = LoggerFactory.getLogger(IdpConfigurationFactory.class);
 
 	private static class ConfigurationSingleton {
 		static IdpConfigurationFactory INSTANCE = new IdpConfigurationFactory();

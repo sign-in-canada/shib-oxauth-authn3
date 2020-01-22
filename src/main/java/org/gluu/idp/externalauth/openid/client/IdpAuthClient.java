@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public class IdpAuthClient extends OpenIdClient<IdpAppConfiguration, IdpAppConfigurationEntry> {
 
 	@SuppressWarnings("unused")
-	private final Logger logger = LoggerFactory.getLogger(IdpAuthClient.class);
+	private final Logger LOG = LoggerFactory.getLogger(IdpAuthClient.class);
 
 	public IdpAuthClient() {
 		super(IdpConfigurationFactory.instance());
