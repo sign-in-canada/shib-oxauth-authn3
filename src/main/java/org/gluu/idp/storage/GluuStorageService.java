@@ -340,7 +340,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
         boolean success = false;
         // Perform successive add operations until success to ensure unique namespace
-        while (!success || (maxIterations-- >= 0)) {
+        while (!success && (maxIterations-- >= 0)) {
             namespace = CodecUtil.hex(ByteUtil.toBytes(System.currentTimeMillis()));
             // Namespace values are safe for memcached keys
             try {
