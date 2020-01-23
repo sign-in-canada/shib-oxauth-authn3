@@ -1,6 +1,8 @@
 package org.gluu.idp.storage;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.TimerTask;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -13,7 +15,6 @@ import org.gluu.persist.PersistenceEntryManager;
 import org.gluu.service.cache.CacheConfiguration;
 import org.gluu.service.cache.CacheProvider;
 import org.gluu.service.cache.StandaloneCacheProviderFactory;
-import org.gluu.util.StringHelper;
 import org.gluu.util.security.StringEncrypter;
 import org.opensaml.storage.AbstractStorageService;
 import org.opensaml.storage.StorageCapabilitiesEx;
@@ -343,12 +344,12 @@ public class GluuStorageService extends AbstractStorageService implements Storag
             namespace = CodecUtil.hex(ByteUtil.toBytes(System.currentTimeMillis()));
             // Namespace values are safe for memcached keys
             try {
-            	String foundNamespace = (String) cacheProvider.get(namespace);
-            	if (StringHelper.isNotEmpty(foundNamespace)) {
+            	boolean foundNamespace = cacheProvider.hasKey(namespace);
+            	if (foundNamespace) {
             		// Find another one due to conflict
             		continue;
             	}
-                cacheProvider.put(0, namespace, context);
+                cacheProvider.put(namespace, context);
                 success = true;
             } catch (Exception ex) {}
         }
@@ -358,7 +359,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
         // Create the reverse mapping to support looking up namespace by context name
         try {
-            cacheProvider.put(0, memcachedKey(context), namespace);
+            cacheProvider.put(memcachedKey(context), namespace);
         } catch (Exception ex) {
             throw new IllegalStateException(context + " already exists");
         }
@@ -393,7 +394,25 @@ public class GluuStorageService extends AbstractStorageService implements Storag
         return key;
     }
 
-    public static class VersionMismatchWrapperException extends RuntimeException {
+    @Override
+	public TimerTask getCleanupTask() {
+        return new TimerTask() {
+
+            @Override
+            public void run() {
+                final Long now = System.currentTimeMillis();
+                LOG.debug("Running cleanup task at {}", now);
+                try {
+                    cacheProvider.cleanup(new Date(now));
+                } catch (final Exception e) {
+                    LOG.error("Error running cleanup task for {}", now, e);
+                }
+                LOG.debug("Finished cleanup task for {}", now);
+            }
+        };
+	}
+
+	public static class VersionMismatchWrapperException extends RuntimeException {
         public VersionMismatchWrapperException(Throwable cause) {
             super(cause);
         }
