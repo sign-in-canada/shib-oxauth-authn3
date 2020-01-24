@@ -422,7 +422,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
 
         contextExpiration =
-                Constraint.isGreaterThanOrEqual(0, interval, "Context expiration interval must be greater than or equal to zero");
+                Constraint.isGreaterThanOrEqual(0, VersionMutableStorageRecord.expiry(interval), "Context expiration interval must be greater than or equal to zero");
     }
 
 	public static class VersionMismatchWrapperException extends RuntimeException {
