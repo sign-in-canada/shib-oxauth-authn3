@@ -1,5 +1,9 @@
 package org.gluu.idp.storage;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 
 import javax.annotation.Nonnull;
@@ -8,9 +12,13 @@ import javax.validation.constraints.NotEmpty;
 
 import org.opensaml.storage.MutableStorageRecord;
 
-public class VersionMutableStorageRecord extends MutableStorageRecord implements Serializable {
+public class VersionMutableStorageRecord extends MutableStorageRecord implements Serializable, Externalizable {
 
 	private static final long serialVersionUID = 8516163557055487227L;
+
+	public VersionMutableStorageRecord() {
+		super(null, null);
+	}
 
 	public VersionMutableStorageRecord(@Nonnull @NotEmpty final String value, @Nullable Long expiration, Long version) {
         super(value, expiration);
@@ -38,4 +46,26 @@ public class VersionMutableStorageRecord extends MutableStorageRecord implements
     public int getExpiry() {
         return expiry(getExpiration());
     }
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeUTF(getValue());
+		if (getExpiration() == null) {
+			out.writeBoolean(false);
+		} else {
+			out.writeBoolean(true);
+			out.writeLong(getExpiration().longValue());
+		}
+		out.writeLong(getVersion());
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		setValue(in.readUTF());
+		if (in.readBoolean()) {
+			setExpiration(in.readLong());
+		}
+		setVersion(in.readLong());
+	}
+
 }

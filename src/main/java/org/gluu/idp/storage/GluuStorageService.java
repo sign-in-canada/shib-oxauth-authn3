@@ -125,6 +125,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
             LOG.error("Failed to get object from cache, key: '{}'", cacheKey, ex);
             throw new IOException("Cache Provider operation failed", ex);
         }
+        LOG.debug("Read entry at {} for context={}, key={}, value={}", cacheKey, context, key, record);
 
         if (record == null) {
             return null;
