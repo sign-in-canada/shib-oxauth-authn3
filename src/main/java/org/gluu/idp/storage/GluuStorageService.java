@@ -428,7 +428,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
     }
 
     private int getSystemExpiration(Long expiration) {
-        return (int) ((expiration == null || expiration == 0) ? 0 : expiration - System.currentTimeMillis());
+        return (int) ((expiration == null || expiration == 0) ? 0 : (expiration - System.currentTimeMillis() / 1000));
     }
 
 	public static class VersionMismatchWrapperException extends RuntimeException {
