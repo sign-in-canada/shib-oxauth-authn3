@@ -99,7 +99,8 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
         LOG.debug("Creating new entry at {} for context={}, key={}, exp={}", cacheKey, context, key, expiry);
         try {
-        	cacheProvider.put(expiry, cacheKey, record);
+        	int ttl = getSystemExpiration(record.getExpiration());
+        	cacheProvider.put(ttl, cacheKey, record);
         } catch (final Exception ex) {
             LOG.error("Failed to put object into cache, key: '{}'", cacheKey, ex);
             
@@ -192,7 +193,8 @@ public class GluuStorageService extends AbstractStorageService implements Storag
         Constraint.isGreaterThan(-1, expiry, "Expiration must be null or positive");
 
         try {
-        	cacheProvider.put(expiry, cacheKey, record);
+        	int ttl = getSystemExpiration(record.getExpiration());
+        	cacheProvider.put(ttl, cacheKey, record);
         } catch (final Exception ex) {
             LOG.error("Failed to update object in cache, key: '{}'", cacheKey, ex);
             
@@ -425,9 +427,14 @@ public class GluuStorageService extends AbstractStorageService implements Storag
                 Constraint.isGreaterThanOrEqual(0, VersionMutableStorageRecord.expiry(interval), "Context expiration interval must be greater than or equal to zero");
     }
 
+    private int getSystemExpiration(Long expiration) {
+        return (int) ((expiration == null || expiration == 0) ? 0 : (expiration - System.currentTimeMillis() / 1000));
+    }
+
 	public static class VersionMismatchWrapperException extends RuntimeException {
         public VersionMismatchWrapperException(Throwable cause) {
             super(cause);
         }
     }
+
 }
