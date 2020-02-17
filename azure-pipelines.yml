@@ -15,13 +15,11 @@ steps:
     gradleWrapperFile: 'gradlew'
     tasks: 'build'
     publishJUnitResults: true
-    #testResultsFiles: '**/TEST-*.xml'
+    testResultsFiles: '**/TEST-*.xml'
     javaHomeOption: 'JDKVersion'
     jdkVersionOption: '1.8'
     gradleOptions: '-Xmx3072m'
-    sonarQubeRunAnalysis: true
-    sqGradlePluginVersionChoice: 'specify'
-    sonarQubeGradlePluginVersion: '2.6.1'
+    sonarQubeRunAnalysis: false
 - task: PublishPipelineArtifact@1
   inputs:
     targetPath: '$(Pipeline.Workspace)/s/build/distributions/'
