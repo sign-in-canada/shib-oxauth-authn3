@@ -50,6 +50,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 	private CacheProvider<?> cacheProvider;
 
     public GluuStorageService(final IdpConfigurationFactory configurationFactory) {
+    	LOG.debug("GluuStorage: create");
         Constraint.isNotNull(configurationFactory, "Configuration factory cannot be null");
         this.configurationFactory = configurationFactory;
 
@@ -60,6 +61,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
     }
 
 	private CacheProvider<?> createCacheProvider() {
+    	LOG.debug("GluuStorage: createCacheProvider");
 		StringEncrypter stringEncrypter = configurationFactory.getStringEncrypter();
 		PersistenceEntryManager persistenceEntryManager = configurationFactory.getPersistenceEntryManager();
 		CacheConfiguration cacheConfiguration = configurationFactory.getCacheConfiguration();
@@ -76,6 +78,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 	 */
 
 	private void initCacheCapabilities() {
+    	LOG.debug("GluuStorage: initCacheCapabilities");
 		this.setContextSize(Integer.MAX_VALUE);
         this.setKeySize(Integer.MAX_VALUE);
         this.setValueSize(Integer.MAX_VALUE);
@@ -83,6 +86,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
     @Override
     public boolean create(@Nonnull String context, @Nonnull String key, @Nonnull String value, @Nullable Long expiration) throws IOException {
+    	LOG.debug("GluuStorage: create");
         Constraint.isNotNull(StringSupport.trimOrNull(context), "Context cannot be null or empty");
         Constraint.isNotNull(StringSupport.trimOrNull(key), "Key cannot be null or empty");
         Constraint.isNotNull(StringSupport.trimOrNull(value), "Value cannot be null or empty");
@@ -113,6 +117,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
     @Nullable
     @Override
     public StorageRecord read(@Nonnull String context, @Nonnull String key) throws IOException {
+    	LOG.debug("GluuStorage: read (key)");
         Constraint.isNotNull(StringSupport.trimOrNull(context), "Context cannot be null or empty");
         Constraint.isNotNull(StringSupport.trimOrNull(key), "Key cannot be null or empty");
 
@@ -143,6 +148,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
     @Nonnull
     @Override
     public Pair<Long, StorageRecord> read(@Nonnull String context, @Nonnull String key, long version) throws IOException {
+    	LOG.debug("GluuStorage: read (key and version)");
         Constraint.isGreaterThan(0, version, "Version must be positive");
         final StorageRecord record = read(context, key);
         if (record == null) {
@@ -160,9 +166,9 @@ public class GluuStorageService extends AbstractStorageService implements Storag
     }
 
     private Long doUpdate(final Long version, final String context, final String key, final String value, final Long expiration) throws IOException {
+    	LOG.debug("GluuStorage: doUpdate");
         Constraint.isNotNull(StringSupport.trimOrNull(context), "Context cannot be null or empty");
         Constraint.isNotNull(StringSupport.trimOrNull(key), "Key cannot be null or empty");
-        Constraint.isNotNull(StringSupport.trimOrNull(value), "Value cannot be null or empty");
 
         final String namespace = lookupNamespace(context);
         if (namespace == null) {
@@ -206,13 +212,17 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
     @Override
     public boolean update(@Nonnull String context, @Nonnull String key, @Nonnull String value, @Nullable Long expiration) throws IOException {
+    	LOG.debug("GluuStorage: update");
+        Constraint.isNotNull(StringSupport.trimOrNull(value), "Value cannot be null or empty");
         return doUpdate(null, context, key, value, expiration) != null;
     }
 
     @Nullable
     @Override
     public Long updateWithVersion(long version, @Nonnull String context, @Nonnull String key, @Nonnull String value, @Nullable Long expiration) throws IOException, VersionMismatchException {
+    	LOG.debug("GluuStorage: updateWithVersion");
         try {
+            Constraint.isNotNull(StringSupport.trimOrNull(value), "Value cannot be null or empty");
             return doUpdate(version, context, key, value, expiration);
         } catch (VersionMismatchWrapperException ex) {
             throw (VersionMismatchException)ex.getCause();
@@ -221,10 +231,13 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
     @Override
     public boolean updateExpiration(@Nonnull String context, @Nonnull String key, @Nullable Long expiration) throws IOException {
+    	LOG.debug("GluuStorage: updateExpiration");
+        Constraint.isGreaterThan(-1, expiration, "Expiration must be null or positive");
         return doUpdate(null, context, key, null, expiration) != null;
     }
 
     private boolean doDelete(String context, String key, Long version) throws IOException {
+    	LOG.debug("GluuStorage: doDelete");
         Constraint.isNotNull(StringSupport.trimOrNull(context), "Context cannot be null or empty");
         Constraint.isNotNull(StringSupport.trimOrNull(key), "Key cannot be null or empty");
 
@@ -260,11 +273,13 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
     @Override
     public boolean delete(@Nonnull String context, @Nonnull String key) throws IOException {
+    	LOG.debug("GluuStorage: delete");
         return doDelete(context, key, null);
     }
 
     @Override
     public boolean deleteWithVersion(long version, @Nonnull String context, @Nonnull String key) throws IOException, VersionMismatchException {
+    	LOG.debug("GluuStorage: deleteWithVersion");
         try {
             return doDelete(context, key, version);
         } catch (VersionMismatchWrapperException e) {
@@ -274,11 +289,13 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
     @Override
     public void reap(@Nonnull String context) throws IOException {
+    	LOG.debug("GluuStorage: reap");
         // handled internally
     }
 
     @Override
     public void updateContextExpiration(@Nonnull String context, @Nullable Long expiration) throws IOException {
+    	LOG.debug("GluuStorage: updateContextExpiration");
         Constraint.isNotNull(StringSupport.trimOrNull(context), "Context cannot be null or empty");
         final int expiry = VersionMutableStorageRecord.expiry(expiration);
         Constraint.isGreaterThan(-1, expiry, "Expiration must be null or positive");
@@ -289,6 +306,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
     @Override
     public void deleteContext(@Nonnull String context) throws IOException {
+    	LOG.debug("GluuStorage: deleteContext");
         Constraint.isNotNull(StringSupport.trimOrNull(context), "Context cannot be null or empty");
 
         final String namespace = lookupNamespace(context);
@@ -307,11 +325,13 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
 	@Override
 	public boolean isServerSide() {
+    	LOG.debug("GluuStorage: isServerSide");
 		return true;
 	}
 
 	@Override
 	public boolean isClustered() {
+    	LOG.debug("GluuStorage: isClustered");
 		return true;
 	}
 
@@ -325,6 +345,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
      * @throws java.io.IOException On memcached operation errors.
      */
     protected String lookupNamespace(final String context) throws IOException {
+    	LOG.debug("GluuStorage: lookupNamespace");
         try {
             return (String) cacheProvider.get(memcachedKey(context));
         } catch (final Exception ex) {
@@ -343,6 +364,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
      * @throws java.io.IOException On memcached operation errors.
      */
     protected String createNamespace(final String context) throws IOException {
+    	LOG.debug("GluuStorage: createNamespace");
     	int maxIterations = 10;
         String namespace =  null;
 
@@ -421,6 +443,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 	}
 
     @Duration public void setContextExpiration(@Duration @NonNegative final long interval) {
+    	LOG.debug("GluuStorage: setContextExpiration");
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
 
         contextExpiration =
