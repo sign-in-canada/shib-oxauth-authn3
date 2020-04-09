@@ -1,8 +1,8 @@
 package org.gluu.idp.externalauth.openid.conf;
 
-import org.gluu.oxauth.client.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.gluu.conf.service.ConfigurationFactory;
 
 /**
  * IDP configuration factory
@@ -10,15 +10,16 @@ import org.slf4j.LoggerFactory;
  * @author Yuriy Movchan
  * @version 0.1, 09/13/2018
  */
-public final class IdpConfiguration extends Configuration<IdpAppConfiguration, IdpLdapAppConfiguration> {
+public final class IdpConfigurationFactory extends ConfigurationFactory<IdpAppConfiguration, IdpAppConfigurationEntry> {
 
-	private final Logger logger = LoggerFactory.getLogger(IdpConfiguration.class);
+	@SuppressWarnings("unused")
+	private final Logger LOG = LoggerFactory.getLogger(IdpConfigurationFactory.class);
 
 	private static class ConfigurationSingleton {
-		static IdpConfiguration INSTANCE = new IdpConfiguration();
+		static IdpConfigurationFactory INSTANCE = new IdpConfigurationFactory();
 	}
 
-	public static IdpConfiguration instance() {
+	public static IdpConfigurationFactory instance() {
 		return ConfigurationSingleton.INSTANCE;
 	}
 
@@ -28,8 +29,8 @@ public final class IdpConfiguration extends Configuration<IdpAppConfiguration, I
 	}
 
 	@Override
-	protected Class<IdpLdapAppConfiguration> getAppConfigurationType() {
-		return IdpLdapAppConfiguration.class;
+	protected Class<IdpAppConfigurationEntry> getAppConfigurationType() {
+		return IdpAppConfigurationEntry.class;
 	}
 
 	@Override

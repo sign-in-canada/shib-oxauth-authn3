@@ -60,7 +60,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     private final String OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST = "sendEndSession";
 
     @Autowired
-    @Qualifier("idpOxAuthClient")
+    @Qualifier("idpAuthClient")
     private IdpAuthClient idpAuthClient;
 
     private final Set<OxAuthToShibTranslator> translators = new HashSet<OxAuthToShibTranslator>();
