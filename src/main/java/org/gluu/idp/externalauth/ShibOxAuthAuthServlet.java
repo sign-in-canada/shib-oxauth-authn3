@@ -27,6 +27,7 @@ import org.gluu.oxauth.model.jwt.Jwt;
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     private final Logger logger = LoggerFactory.getLogger(ShibOxAuthAuthServlet.class);
 
     private final String OXAUTH_PARAM_ENTITY_ID = "entityId";
+    private final String OXAUTH_PARAM_ISSUER_ID = "issuerId";
     private final String OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST = "sendEndSession";
 
     @Autowired
@@ -198,8 +200,12 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             try {
                 ProfileRequestContext prc = ExternalAuthentication.getProfileRequestContext(convId, request);
                 AuthnRequest authnRequest = (AuthnRequest) prc.getInboundMessageContext().getMessage();
-                if (null != authnRequest) {
+                if (authnRequest != null) {
                     RequestedAuthnContext authnContext = authnRequest.getRequestedAuthnContext();
+                    Issuer issuer = authnRequest.getIssuer();
+                    if (issuer != null) {
+                    	customParameters.put(OXAUTH_PARAM_ISSUER_ID, issuer.getValue());
+                    }
                     if (null != authnContext) {
                         String acrs = authnContext.getAuthnContextClassRefs().stream()
                             .map(AuthnContextClassRef::getAuthnContextClassRef).collect(Collectors.joining(" "));
