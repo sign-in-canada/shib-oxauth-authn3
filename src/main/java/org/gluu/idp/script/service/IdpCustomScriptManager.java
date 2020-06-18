@@ -10,7 +10,9 @@ import org.gluu.service.custom.script.CustomScriptManager;
  * @author Yuriy Movchan
  * @version 0.1, 06/18/2020
  */
-public class IdpCustomScriptManager extends CustomScriptManager {
+public class IdpCustomScriptManager {
+	
+	private CustomScriptManager customScriptManager;
 
 	private static final long serialVersionUID = 2727779937414218627L;
 
