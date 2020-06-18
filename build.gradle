@@ -35,6 +35,7 @@ dependencies {
     compile "org.gluu:oxcore-persistence-ldap:$project.oxCoreVersion"
     compile "org.gluu:oxcore-standalone:$project.oxCoreVersion"
     compile "org.gluu:oxcore-cache:$project.oxCoreVersion"
+    compile "org.gluu:oxcore-script:$project.oxCoreVersion"
 
     provided "javax.servlet:javax.servlet-api:$project.servletVersion"
     provided "net.shibboleth.idp:idp-authn-api:$project.shibIdpVersion"
