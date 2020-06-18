@@ -15,6 +15,7 @@ build/
 .idea
 *.iml
 *.ipr
+.settings/
 
 target/
 pom.xml.tag
