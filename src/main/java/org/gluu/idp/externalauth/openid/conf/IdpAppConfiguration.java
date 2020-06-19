@@ -12,4 +12,14 @@ public class IdpAppConfiguration extends AppConfiguration {
 
 	private static final long serialVersionUID = 5450226508968717097L;
 
+	private String scriptDn;
+
+	public String getScriptDn() {
+		return scriptDn;
+	}
+
+	public void setScriptDn(String scriptDn) {
+		this.scriptDn = scriptDn;
+	}
+
 }
