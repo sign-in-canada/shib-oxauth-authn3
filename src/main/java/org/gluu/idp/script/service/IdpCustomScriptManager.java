@@ -10,16 +10,16 @@ import org.gluu.service.custom.script.StandaloneCustomScriptManager;
  * @author Yuriy Movchan
  * @version 0.1, 06/18/2020
  */
-public class IdpCustomScriptManager extends StandaloneCustomScriptManager {
+public class IdpCustomScriptManager {
 
-	private static final long serialVersionUID = 2727779937414218627L;
-
+	private StandaloneCustomScriptManager standaloneCustomScriptManager;
 	private IdpExternalScriptService idpExternalScriptService;
 
 	public IdpCustomScriptManager(final IdpConfigurationFactory configurationFactory) {
-		super(configurationFactory.getPersistenceEntryManager(),
-			  configurationFactory.getAppConfiguration().getScriptDn(),
-			  configurationFactory.getBaseConfiguration().getString("pythonModulesDir"));
+		standaloneCustomScriptManager = new StandaloneCustomScriptManager(
+				configurationFactory.getPersistenceEntryManager(),
+				configurationFactory.getAppConfiguration().getScriptDn(),
+				configurationFactory.getBaseConfiguration().getString("pythonModulesDir"));
 	}
 	
 	public void init() {
@@ -27,10 +27,10 @@ public class IdpCustomScriptManager extends StandaloneCustomScriptManager {
 		this.idpExternalScriptService = new IdpExternalScriptService();
 
 		// Register required external scripts
-		registerExternalScriptService(idpExternalScriptService);
+		standaloneCustomScriptManager.registerExternalScriptService(idpExternalScriptService);
 
 		// Init script manager and load scripts
-		super.init();
+		standaloneCustomScriptManager.init();
 	}
 	
 	public IdpExternalScriptService getIdpExternalScriptService() {
