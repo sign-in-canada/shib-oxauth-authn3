@@ -20,15 +20,15 @@ import net.shibboleth.utilities.java.support.logic.Constraint;
  * @author Yuriy Movchan
  * @version 0.1, 06/22/2020
  */
-public class ReleaseAttributesPostProcessor extends ReleaseAttributes {
+public class GluuReleaseAttributesPostProcessor extends ReleaseAttributes {
 
-	private final Logger LOG = LoggerFactory.getLogger(ReleaseAttributesPostProcessor.class);
+	private final Logger LOG = LoggerFactory.getLogger(GluuReleaseAttributesPostProcessor.class);
 
 	private IdpConfigurationFactory configurationFactory;
 	private IdpCustomScriptManager customScriptManager;
 	private IdpExternalScriptService idpExternalScriptService;
 
-    public ReleaseAttributesPostProcessor(final IdpConfigurationFactory configurationFactory, final IdpCustomScriptManager customScriptManager) {
+    public GluuReleaseAttributesPostProcessor(final IdpConfigurationFactory configurationFactory, final IdpCustomScriptManager customScriptManager) {
     	LOG.debug("ReleaseAttributesPostProcessor: create");
         Constraint.isNotNull(configurationFactory, "Configuration factory cannot be null");
         this.configurationFactory = configurationFactory;

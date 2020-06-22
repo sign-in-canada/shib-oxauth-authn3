@@ -15,7 +15,7 @@ public class ReleaseAttributesContext implements Serializable {
 	private static final long serialVersionUID = 1822377169827670256L;
 
 	private AttributeContext attributeContext;
-	private ReleaseAttributesPostProcessor releaseAttributesPostProcessor;
+	private GluuReleaseAttributesPostProcessor releaseAttributesPostProcessor;
 
 	public void setAttributeContext(AttributeContext attributeContext) {
 		this.attributeContext = attributeContext;
@@ -25,15 +25,15 @@ public class ReleaseAttributesContext implements Serializable {
 		return attributeContext;
 	}
 
-	public void setAttributeReleaseAction(ReleaseAttributesPostProcessor releaseAttributesPostProcessor) {
+	public void setAttributeReleaseAction(GluuReleaseAttributesPostProcessor releaseAttributesPostProcessor) {
 		this.releaseAttributesPostProcessor = releaseAttributesPostProcessor;
 	}
 
-	public ReleaseAttributesPostProcessor getReleaseAttributesPostProcessor() {
+	public GluuReleaseAttributesPostProcessor getReleaseAttributesPostProcessor() {
 		return releaseAttributesPostProcessor;
 	}
 
-	public void setReleaseAttributesPostProcessor(ReleaseAttributesPostProcessor releaseAttributesPostProcessor) {
+	public void setReleaseAttributesPostProcessor(GluuReleaseAttributesPostProcessor releaseAttributesPostProcessor) {
 		this.releaseAttributesPostProcessor = releaseAttributesPostProcessor;
 	}
 
