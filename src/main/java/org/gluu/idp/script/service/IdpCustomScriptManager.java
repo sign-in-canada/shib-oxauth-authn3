@@ -16,11 +16,14 @@ public class IdpCustomScriptManager extends Initializable {
 	private StandaloneCustomScriptManager standaloneCustomScriptManager;
 	private IdpExternalScriptService idpExternalScriptService;
 
-	public IdpCustomScriptManager(final IdpConfigurationFactory configurationFactory) {
+	public IdpCustomScriptManager(final IdpConfigurationFactory configurationFactory, boolean init) {
 		standaloneCustomScriptManager = new StandaloneCustomScriptManager(
 				configurationFactory.getPersistenceEntryManager(),
 				configurationFactory.getAppConfiguration().getScriptDn(),
 				configurationFactory.getBaseConfiguration().getString("pythonModulesDir"));
+		if (init) {
+			init();
+		}
 	}
 	
 	public IdpExternalScriptService getIdpExternalScriptService() {
