@@ -1,6 +1,7 @@
 package org.gluu.idp.storage;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Date;
 import java.util.TimerTask;
 
@@ -23,7 +24,6 @@ import org.opensaml.storage.VersionMismatchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.shibboleth.utilities.java.support.annotation.Duration;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonNegative;
 import net.shibboleth.utilities.java.support.collection.Pair;
 import net.shibboleth.utilities.java.support.component.ComponentSupport;
@@ -41,7 +41,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 	@SuppressWarnings("unused")
 	private final Logger LOG = LoggerFactory.getLogger(GluuStorageService.class);
 
-    @Duration @NonNegative private long contextExpiration;
+    @NonNegative private Duration contextExpiration;
 
 	/** Maximum length in bytes of memcached keys. */
     private static final int MAX_KEY_LENGTH = 250;
@@ -379,7 +379,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
             		// Find another one due to conflict
             		continue;
             	}
-                cacheProvider.put((int) contextExpiration, namespace, context);
+                cacheProvider.put((int) contextExpiration.getSeconds(), namespace, context);
                 success = true;
             } catch (Exception ex) {}
         }
@@ -389,7 +389,7 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
         // Create the reverse mapping to support looking up namespace by context name
         try {
-            cacheProvider.put((int) contextExpiration, memcachedKey(context), namespace);
+            cacheProvider.put((int) contextExpiration.getSeconds(), memcachedKey(context), namespace);
         } catch (Exception ex) {
             throw new IllegalStateException(context + " already exists");
         }
@@ -442,12 +442,12 @@ public class GluuStorageService extends AbstractStorageService implements Storag
         };
 	}
 
-    @Duration public void setContextExpiration(@Duration @NonNegative final long interval) {
+    public void setContextExpiration(@NonNegative final Duration interval) {
     	LOG.debug("GluuStorage: setContextExpiration");
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
 
-        contextExpiration =
-                Constraint.isGreaterThanOrEqual(0, VersionMutableStorageRecord.expiry(interval), "Context expiration interval must be greater than or equal to zero");
+        Constraint.isNotNull(interval, "Context expiration interval cannot be null");
+        Constraint.isFalse(interval.isNegative(), "Context expiration interval must be greater than or equal to zero");
     }
 
     private int getSystemExpiration(Long expiration) {

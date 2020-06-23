@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.shibboleth.idp.attribute.IdPAttribute;
+import net.shibboleth.idp.attribute.IdPAttributeValue;
 import net.shibboleth.idp.attribute.StringAttributeValue;
 import net.shibboleth.idp.authn.ExternalAuthentication;
 import net.shibboleth.idp.authn.principal.IdPAttributePrincipal;
@@ -79,7 +80,7 @@ public class AuthenticatedNameTranslator implements OxAuthToShibTranslator {
         for (final Map.Entry<String, Object> entry : casAttributes.entrySet()) {
             final IdPAttribute attr = new IdPAttribute(entry.getKey());
 
-            final List<StringAttributeValue> attributeValues = new ArrayList<>();
+            final List<IdPAttributeValue> attributeValues = new ArrayList<>();
             if (entry.getValue() instanceof Collection) {
                 for (final Object value : (Collection) entry.getValue()) {
                     attributeValues.add(new StringAttributeValue(value.toString()));
