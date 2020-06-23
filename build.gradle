@@ -6,7 +6,7 @@ apply plugin: 'maven-publish'
 
 defaultTasks 'clean', 'distZip', 'distTar'
 
-sourceCompatibility = 1.11
+sourceCompatibility = 1.8
 targetCompatibility = 1.11
 
 group = 'org.gluu'
