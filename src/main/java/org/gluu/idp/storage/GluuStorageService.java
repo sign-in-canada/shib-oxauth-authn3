@@ -445,12 +445,14 @@ public class GluuStorageService extends AbstractStorageService implements Storag
         };
 	}
 
-    public void setContextExpiration(@NonNegative final Duration interval) {
+    public void setContextExpiration(@NonNegative final Duration contextExpiration) {
     	LOG.debug("GluuStorage: setContextExpiration");
         ComponentSupport.ifInitializedThrowUnmodifiabledComponentException(this);
 
-        Constraint.isNotNull(interval, "Context expiration interval cannot be null");
-        Constraint.isFalse(interval.isNegative(), "Context expiration interval must be greater than or equal to zero");
+        Constraint.isNotNull(contextExpiration, "Context expiration interval cannot be null");
+        Constraint.isFalse(contextExpiration.isNegative(), "Context expiration interval must be greater than or equal to zero");
+        
+        this.contextExpiration = contextExpiration;
     }
 
     private int getSystemExpiration(Long expiration) {
