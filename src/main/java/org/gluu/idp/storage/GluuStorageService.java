@@ -56,6 +56,9 @@ public class GluuStorageService extends AbstractStorageService implements Storag
 
         this.cacheProvider = createCacheProvider();
         Constraint.isNotNull(cacheProvider, "Cache Provider factory cannot be null");
+        
+        this.contextExpiration = Duration.ZERO;
+
 
         initCacheCapabilities();
     }
