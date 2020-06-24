@@ -75,9 +75,9 @@ public class AuthenticatedNameTranslator implements OxAuthToShibTranslator {
         return EqualsBuilder.reflectionEquals(this, that);
     }
 
-    private Collection<IdPAttributePrincipal> produceIdpAttributePrincipal(final Map<String, Object> casAttributes) {
+    public Collection<IdPAttributePrincipal> produceIdpAttributePrincipal(final Map<String, Object> openidAttributes) {
         final Set<IdPAttributePrincipal> principals = new HashSet<>();
-        for (final Map.Entry<String, Object> entry : casAttributes.entrySet()) {
+        for (final Map.Entry<String, Object> entry : openidAttributes.entrySet()) {
             final IdPAttribute attr = new IdPAttribute(entry.getKey());
 
             final List<IdPAttributeValue> attributeValues = new ArrayList<>();
