@@ -22,6 +22,36 @@ public class IdpExternalScriptService extends ExternalScriptService {
         super(CustomScriptType.IDP);
     }
 
+//  boolean translateAttributes(Object context, Map<String, SimpleCustomProperty> configurationAttributes);
+
+  public boolean executeExternalTranslateAttributesMethod(Object context, CustomScriptConfiguration customScriptConfiguration) {
+      try {
+          log.debug("Executing python 'translateAttributes' method");
+          IdpType idpType = (IdpType) customScriptConfiguration.getExternalType();
+          Map<String, SimpleCustomProperty> configurationAttributes = customScriptConfiguration.getConfigurationAttributes();
+          return idpType.translateAttributes(context, configurationAttributes);
+      } catch (Exception ex) {
+          log.error(ex.getMessage(), ex);
+          saveScriptError(customScriptConfiguration.getCustomScript(), ex);
+      }
+
+      return false;
+  }
+
+  public boolean executeExternalTranslateAttributesMethod(Object context) {
+      boolean result = true;
+      for (CustomScriptConfiguration customScriptConfiguration : this.customScriptConfigurations) {
+          if (customScriptConfiguration.getExternalType().getApiVersion() > 1) {
+              result &= executeExternalTranslateAttributesMethod(context, customScriptConfiguration);
+              if (!result) {
+                  return result;
+              }
+          }
+      }
+
+      return result;
+  }
+
 //    boolean updateAttributes(Object context, Map<String, SimpleCustomProperty> configurationAttributes);
 
     public boolean executeExternalUpdateAttributesMethod(Object context, CustomScriptConfiguration customScriptConfiguration) {

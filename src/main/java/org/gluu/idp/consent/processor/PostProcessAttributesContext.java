@@ -5,12 +5,12 @@ import java.io.Serializable;
 import net.shibboleth.idp.attribute.context.AttributeContext;
 
 /**
- * Release attributes context
+ * Post process attributes context
  *
  * @author Yuriy Movchan
  * @version 0.1, 06/22/2020
  */
-public class ReleaseAttributesContext implements Serializable {
+public class PostProcessAttributesContext implements Serializable {
 
 	private static final long serialVersionUID = 1822377169827670256L;
 

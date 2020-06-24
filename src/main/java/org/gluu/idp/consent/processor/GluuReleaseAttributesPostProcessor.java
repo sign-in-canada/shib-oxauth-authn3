@@ -26,7 +26,7 @@ public class GluuReleaseAttributesPostProcessor extends ReleaseAttributes {
 
 	private IdpConfigurationFactory configurationFactory;
 	private IdpCustomScriptManager customScriptManager;
-	private IdpExternalScriptService idpExternalScriptService;
+	private IdpExternalScriptService externalScriptService;
 
     public GluuReleaseAttributesPostProcessor(final IdpConfigurationFactory configurationFactory, final IdpCustomScriptManager customScriptManager) {
     	LOG.debug("ReleaseAttributesPostProcessor: create");
@@ -35,15 +35,14 @@ public class GluuReleaseAttributesPostProcessor extends ReleaseAttributes {
 
         Constraint.isNotNull(customScriptManager, "Custom script manager cannot be null");
         this.customScriptManager = customScriptManager;
-        
+
         init();
     }
 
     private void init() {
     	// Call custom script manager init to make sure that it initialized
-    	
     	this.customScriptManager.init();
-    	this.idpExternalScriptService = this.customScriptManager.getIdpExternalScriptService();
+    	this.externalScriptService = this.customScriptManager.getIdpExternalScriptService();
 	}
 
 	/**
@@ -59,22 +58,22 @@ public class GluuReleaseAttributesPostProcessor extends ReleaseAttributes {
 		super.doExecute(profileRequestContext, interceptorContext);
 
 		// Return if script(s) not exists or invalid
-		if (!this.idpExternalScriptService.isEnabled()) {
+		if (!this.externalScriptService.isEnabled()) {
 			LOG.trace("Using default release attributes post processor");
 			return;
 		}
 		
 		LOG.trace("Executing external IDP script");
-		ReleaseAttributesContext context = buildContext();
-		boolean result = this.idpExternalScriptService.executeExternalUpdateAttributesMethod(context);
+		PostProcessAttributesContext context = buildContext();
+		boolean result = this.externalScriptService.executeExternalUpdateAttributesMethod(context);
 
 		LOG.debug("Executed script method 'updateAttributes' with result {}", result);
 	}
 
-	private ReleaseAttributesContext buildContext() {
+	private PostProcessAttributesContext buildContext() {
 		AttributeContext attributeContext = getAttributeContext();
 
-		ReleaseAttributesContext context = new ReleaseAttributesContext();
+		PostProcessAttributesContext context = new PostProcessAttributesContext();
 		context.setAttributeContext(attributeContext);
 		context.setAttributeReleaseAction(this);
 

@@ -20,8 +20,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.gluu.context.J2EContext;
 import org.gluu.context.WebContext;
+import org.gluu.idp.consent.processor.PostProcessAttributesContext;
 import org.gluu.idp.externalauth.openid.client.IdpAuthClient;
 import org.gluu.idp.script.service.IdpCustomScriptManager;
+import org.gluu.idp.script.service.external.IdpExternalScriptService;
 import org.gluu.oxauth.client.auth.principal.OpenIdCredentials;
 import org.gluu.oxauth.client.auth.user.UserProfile;
 import org.gluu.oxauth.model.exception.InvalidJwtException;
@@ -39,6 +41,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
+import net.shibboleth.idp.attribute.context.AttributeContext;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.ExternalAuthentication;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
@@ -55,17 +58,18 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
 
     private static final long serialVersionUID = -4864851392327422662L;
 
-    private final Logger logger = LoggerFactory.getLogger(ShibOxAuthAuthServlet.class);
+    private final Logger LOG = LoggerFactory.getLogger(ShibOxAuthAuthServlet.class);
 
     private final String OXAUTH_PARAM_ENTITY_ID = "entityId";
     private final String OXAUTH_PARAM_ISSUER_ID = "issuerId";
     private final String OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST = "sendEndSession";
 
-    private IdpAuthClient idpAuthClient;
+    private IdpAuthClient authClient;
 
     private final Set<OxAuthToShibTranslator> translators = new HashSet<OxAuthToShibTranslator>();
 
-	private IdpCustomScriptManager idpCustomScriptManager;
+	private IdpCustomScriptManager customScriptManager;
+	private IdpExternalScriptService externalScriptService;
 
     @Override
     public void init(final ServletConfig config) throws ServletException {
@@ -75,8 +79,12 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
 
         WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(context);
 
-        this.idpAuthClient = applicationContext.getBean(IdpAuthClient.class);
-        this.idpCustomScriptManager = (IdpCustomScriptManager) applicationContext.getBean("idpCustomScriptManager");
+        this.authClient = (IdpAuthClient) applicationContext.getBean("idpAuthClient");
+        this.customScriptManager = (IdpCustomScriptManager) applicationContext.getBean("idpCustomScriptManager");
+
+        // Call custom script manager init to make sure that it initialized
+    	this.customScriptManager.init();
+    	this.externalScriptService = this.customScriptManager.getIdpExternalScriptService();
 
 		final ApplicationContext ac = (ApplicationContext) context
 				.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
@@ -88,7 +96,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException {
         try {
             final String requestUrl = request.getRequestURL().toString();
-            logger.trace("Get request to: '{}'", requestUrl);
+            LOG.trace("Get request to: '{}'", requestUrl);
 
             boolean logoutEndpoint = requestUrl.endsWith("/logout");
             if (logoutEndpoint ) {
@@ -104,12 +112,12 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
 
             // Web context
             final WebContext context = new J2EContext(request, response);
-            final boolean authorizationResponse = idpAuthClient.isAuthorizationResponse(context);
+            final boolean authorizationResponse = authClient.isAuthorizationResponse(context);
 
             HttpServletRequest externalRequest = request;
             if (authorizationResponse) {
                 try {
-                    final Jwt jwt = Jwt.parse(idpAuthClient.getRequestState(context));
+                    final Jwt jwt = Jwt.parse(authClient.getRequestState(context));
 
                     externalRequest = new HttpServletRequestWrapper(request) {
                         @Override
@@ -122,7 +130,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
                         }
                     };
                 } catch (InvalidJwtException ex) {
-                    logger.debug("State is not in JWT format", ex);
+                    LOG.debug("State is not in JWT format", ex);
                 }
             }
 
@@ -134,16 +142,16 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
 
             // It's an authentication
             if (!authorizationResponse) {
-                logger.debug("Initiating oxAuth login redirect");
+                LOG.debug("Initiating oxAuth login redirect");
                 startLoginRequest(request, response, force);
                 return;
             }
 
-            logger.info("Procession authorization response");
+            LOG.info("Procession authorization response");
 
             // Check if oxAuth request state is correct
-            if (!idpAuthClient.isValidRequestState(context)) {
-                logger.error("The state in session and in request are not equals");
+            if (!authClient.isValidRequestState(context)) {
+                LOG.error("The state in session and in request are not equals");
 
                 // Re-init login page
                 startLoginRequest(request, response, force);
@@ -153,11 +161,11 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             processAuthorizationResponse(request, response, authenticationKey);
 
         } catch (final ExternalAuthenticationException ex) {
-            logger.warn("Error processing oxAuth authentication request", ex);
+            LOG.warn("Error processing oxAuth authentication request", ex);
             loadErrorPage(request, response);
 
         } catch (final Exception ex) {
-            logger.error("Something unexpected happened", ex);
+            LOG.error("Something unexpected happened", ex);
             request.setAttribute(ExternalAuthentication.AUTHENTICATION_ERROR_KEY, AuthnEventIds.AUTHN_EXCEPTION);
         }
     }
@@ -168,22 +176,34 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             // Web context
             final WebContext context = new J2EContext(request, response);
 
-            final OpenIdCredentials openIdCredentials = idpAuthClient.getCredentials(context);
-            logger.debug("Client name : '{}'", openIdCredentials.getClientName());
+            final OpenIdCredentials openIdCredentials = authClient.getCredentials(context);
+            LOG.debug("Client name : '{}'", openIdCredentials.getClientName());
 
-            final UserProfile userProfile = idpAuthClient.getUserProfile(openIdCredentials, context);
-            logger.debug("User profile : {}", userProfile);
+            final UserProfile userProfile = authClient.getUserProfile(openIdCredentials, context);
+            LOG.debug("User profile : {}", userProfile);
 
             if (userProfile == null) {
-                logger.error("Token validation failed, returning InvalidToken");
+                LOG.error("Token validation failed, returning InvalidToken");
                 request.setAttribute(ExternalAuthentication.AUTHENTICATION_ERROR_KEY, "InvalidToken");
             } else {
-                for (final OxAuthToShibTranslator translator : translators) {
-                    translator.doTranslation(request, response, userProfile, authenticationKey);
-                }
+        		// Return if script(s) not exists or invalid
+            	boolean result = false;
+        		if (this.externalScriptService.isEnabled()) {
+        			TranslateAttributesContext translateAttributesContext = buildContext(request, response, userProfile, authenticationKey);
+        			result = this.externalScriptService.executeExternalTranslateAttributesMethod(translateAttributesContext);
+        		}
+        		
+        		if (!result) {
+        			LOG.trace("Using default translate attributes method");
+
+        			for (final OxAuthToShibTranslator translator : translators) {
+                        translator.doTranslation(request, response, userProfile, authenticationKey);
+                    }
+        		}
+
             }
         } catch (final Exception ex) {
-            logger.error("Token validation failed, returning InvalidToken", ex);
+            LOG.error("Token validation failed, returning InvalidToken", ex);
             request.setAttribute(ExternalAuthentication.AUTHENTICATION_ERROR_KEY, "InvalidToken");
         } finally {
             ExternalAuthentication.finishExternalAuthentication(authenticationKey, request, response);
@@ -219,16 +239,16 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
                     }
                 }
             } catch (Exception e) {
-                logger.error("Unable to process to AuthnContextClassRef", e);
+                LOG.error("Unable to process to AuthnContextClassRef", e);
             }           
 
-            final String loginUrl = idpAuthClient.getRedirectionUrl(context, customResponseHeaders, customParameters, force);
-            logger.debug("Generated redirection Url", loginUrl);
+            final String loginUrl = authClient.getRedirectionUrl(context, customResponseHeaders, customParameters, force);
+            LOG.debug("Generated redirection Url", loginUrl);
 
-            logger.debug("loginUrl: {}", loginUrl);
+            LOG.debug("loginUrl: {}", loginUrl);
             response.sendRedirect(loginUrl);
         } catch (final IOException ex) {
-            logger.error("Unable to redirect to oxAuth from ShibOxAuth", ex);
+            LOG.error("Unable to redirect to oxAuth from ShibOxAuth", ex);
         }
     }
 
@@ -237,18 +257,18 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             // Web context
             final WebContext context = new J2EContext(request, response);
 
-            final String logoutUrl = idpAuthClient.getLogoutRedirectionUrl(context);
-            logger.debug("Generated logout redirection Url", logoutUrl);
+            final String logoutUrl = authClient.getLogoutRedirectionUrl(context);
+            LOG.debug("Generated logout redirection Url", logoutUrl);
             
 
-            logger.debug("logoutUrl: {}", logoutUrl);
+            LOG.debug("logoutUrl: {}", logoutUrl);
             response.sendRedirect(logoutUrl);
 
-            idpAuthClient.clearAuthorized(context);
-            idpAuthClient.setAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST, Boolean.TRUE);
-            logger.debug("Client authorization is removed (set null id_token in session)");
+            authClient.clearAuthorized(context);
+            authClient.setAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST, Boolean.TRUE);
+            LOG.debug("Client authorization is removed (set null id_token in session)");
         } catch (final IOException ex) {
-            logger.error("Unable to redirect to oxAuth from ShibOxAuth", ex);
+            LOG.error("Unable to redirect to oxAuth from ShibOxAuth", ex);
         }
     }
 
@@ -256,21 +276,21 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
         try {
             // Web context
             final WebContext context = new J2EContext(request, response);
-            final Object sendEndSession = idpAuthClient.getAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST);
+            final Object sendEndSession = authClient.getAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST);
             if (Boolean.TRUE.equals(sendEndSession)) {
-                idpAuthClient.setAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST, null);
-                logger.debug("Client send end_session request. Ignoring OP initiated logout request");
+                authClient.setAttribute(context, OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST, null);
+                LOG.debug("Client send end_session request. Ignoring OP initiated logout request");
                 return;
             }
 
             final String logoutUrl = "/idp/profile/Logout";
-            logger.debug("logoutUrl: {}", logoutUrl);
+            LOG.debug("logoutUrl: {}", logoutUrl);
             response.sendRedirect(logoutUrl);
 
-            idpAuthClient.clearAuthorized(context);
-            logger.debug("Client authorization is removed (set null id_token in session)");
+            authClient.clearAuthorized(context);
+            LOG.debug("Client authorization is removed (set null id_token in session)");
         } catch (final IOException ex) {
-            logger.error("Unable to redirect to oxAuth from ShibOxAuth", ex);
+            LOG.error("Unable to redirect to oxAuth from ShibOxAuth", ex);
         }
     }
 
@@ -285,16 +305,16 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
         final String oxAuthToShibTranslators = StringUtils.defaultString(environment.getProperty("shib.oxauth.oxAuthToShibTranslator", ""));
         for (final String classname : StringUtils.split(oxAuthToShibTranslators, ';')) {
             try {
-                logger.debug("Loading translator class {}", classname);
+                LOG.debug("Loading translator class {}", classname);
                 final Class<?> c = Class.forName(classname);
                 final OxAuthToShibTranslator e = (OxAuthToShibTranslator) c.newInstance();
                 if (e instanceof EnvironmentAware) {
                     ((EnvironmentAware) e).setEnvironment(environment);
                 }
                 translators.add(e);
-                logger.debug("Added translator class {}", classname);
+                LOG.debug("Added translator class {}", classname);
             } catch (final Exception ex) {
-                logger.error("Error building oxAuth to Shib translator with name: " + classname, ex);
+                LOG.error("Error building oxAuth to Shib translator with name: " + classname, ex);
             }
         }
     }
@@ -304,10 +324,16 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
         try {
             requestDispatcher.forward(request, response);
         } catch (final Exception ex) {
-            logger.error("Error rendering the empty conversation state (shib-oxauth-authn3) error view.");
+            LOG.error("Error rendering the empty conversation state (shib-oxauth-authn3) error view.");
             response.resetBuffer();
             response.setStatus(404);
         }
     }
+
+	private TranslateAttributesContext buildContext(HttpServletRequest request, HttpServletResponse response, UserProfile userProfile, String authenticationKey) {
+		TranslateAttributesContext translateAttributesContext = new TranslateAttributesContext(request, response, userProfile, authenticationKey);
+
+		return translateAttributesContext;
+	}
 
 }

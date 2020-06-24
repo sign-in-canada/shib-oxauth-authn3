@@ -59,7 +59,6 @@ public class GluuStorageService extends AbstractStorageService implements Storag
         
         this.contextExpiration = Duration.ZERO;
 
-
         initCacheCapabilities();
     }
 
