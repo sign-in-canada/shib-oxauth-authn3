@@ -43,6 +43,7 @@ dependencies {
     provided "net.shibboleth.idp:idp-consent-impl:$project.shibIdpVersion"
     provided "org.opensaml:opensaml-storage-impl:$project.shibIdpVersion"
     provided "commons-lang:commons-lang:$project.commonLangVersion"
+    provided "org.slf4j:log4j-over-slf4j:1.7.30"
 
     testCompile "junit:junit:$project.junitVersion"
     testCompile "org.mockito:mockito-all:$project.mockitoVersion"
