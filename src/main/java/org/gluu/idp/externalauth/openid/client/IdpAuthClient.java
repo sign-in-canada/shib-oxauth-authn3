@@ -18,8 +18,8 @@ public class IdpAuthClient extends OpenIdClient<IdpAppConfiguration, IdpAppConfi
 	@SuppressWarnings("unused")
 	private final Logger LOG = LoggerFactory.getLogger(IdpAuthClient.class);
 
-	public IdpAuthClient(final IdpConfigurationFactory idpConfigurationFactory) {
-		super(idpConfigurationFactory);
+	public IdpAuthClient(final IdpConfigurationFactory configurationFactory) {
+		super(configurationFactory);
 	}
 
 }
