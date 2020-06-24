@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -20,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.gluu.context.J2EContext;
 import org.gluu.context.WebContext;
 import org.gluu.idp.externalauth.openid.client.IdpAuthClient;
+import org.gluu.idp.script.service.IdpCustomScriptManager;
 import org.gluu.oxauth.client.auth.principal.OpenIdCredentials;
 import org.gluu.oxauth.client.auth.user.UserProfile;
 import org.gluu.oxauth.model.exception.InvalidJwtException;
@@ -31,12 +33,11 @@ import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.ExternalAuthentication;
@@ -60,20 +61,25 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
     private final String OXAUTH_PARAM_ISSUER_ID = "issuerId";
     private final String OXAUTH_ATTRIBIUTE_SEND_END_SESSION_REQUEST = "sendEndSession";
 
-    @Autowired
-    @Qualifier("idpAuthClient")
     private IdpAuthClient idpAuthClient;
 
     private final Set<OxAuthToShibTranslator> translators = new HashSet<OxAuthToShibTranslator>();
+
+	private IdpCustomScriptManager idpCustomScriptManager;
 
     @Override
     public void init(final ServletConfig config) throws ServletException {
         super.init(config);
 
-        this.idpAuthClient = new IdpAuthClient();
+        ServletContext context = getServletContext();
 
-        final ApplicationContext ac = (ApplicationContext) config.getServletContext()
-                .getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+        WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(context);
+
+        this.idpAuthClient = applicationContext.getBean(IdpAuthClient.class);
+        this.idpCustomScriptManager = (IdpCustomScriptManager) applicationContext.getBean("idpCustomScriptManager");
+
+		final ApplicationContext ac = (ApplicationContext) context
+				.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
 
         buildTranslators(ac.getEnvironment());
     }

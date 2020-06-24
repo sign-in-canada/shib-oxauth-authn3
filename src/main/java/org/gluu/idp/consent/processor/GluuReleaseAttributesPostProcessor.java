@@ -66,7 +66,9 @@ public class GluuReleaseAttributesPostProcessor extends ReleaseAttributes {
 		
 		LOG.trace("Executing external IDP script");
 		ReleaseAttributesContext context = buildContext();
-		this.idpExternalScriptService.executeExternalUpdateAttributesMethod(context);
+		boolean result = this.idpExternalScriptService.executeExternalUpdateAttributesMethod(context);
+
+		LOG.debug("Executed script method 'updateAttributes' with result {}", result);
 	}
 
 	private ReleaseAttributesContext buildContext() {
