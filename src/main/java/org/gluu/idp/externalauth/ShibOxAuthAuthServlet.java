@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.gluu.context.J2EContext;
 import org.gluu.context.WebContext;
-import org.gluu.idp.consent.processor.PostProcessAttributesContext;
 import org.gluu.idp.externalauth.openid.client.IdpAuthClient;
 import org.gluu.idp.script.service.IdpCustomScriptManager;
 import org.gluu.idp.script.service.external.IdpExternalScriptService;
@@ -41,7 +40,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import net.shibboleth.idp.attribute.context.AttributeContext;
 import net.shibboleth.idp.authn.AuthnEventIds;
 import net.shibboleth.idp.authn.ExternalAuthentication;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
@@ -147,7 +145,7 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
                 return;
             }
 
-            LOG.info("Procession authorization response");
+            LOG.info("Processing authorization response");
 
             // Check if oxAuth request state is correct
             if (!authClient.isValidRequestState(context)) {
