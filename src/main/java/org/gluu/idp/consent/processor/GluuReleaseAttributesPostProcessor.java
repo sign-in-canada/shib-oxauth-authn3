@@ -2,6 +2,7 @@ package org.gluu.idp.consent.processor;
 
 import javax.annotation.Nonnull;
 
+import org.gluu.idp.consent.processor.PostProcessAttributesContext;
 import org.gluu.idp.externalauth.openid.conf.IdpConfigurationFactory;
 import org.gluu.idp.script.service.IdpCustomScriptManager;
 import org.gluu.idp.script.service.external.IdpExternalScriptService;
@@ -10,17 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.shibboleth.idp.attribute.context.AttributeContext;
-import net.shibboleth.idp.consent.flow.ar.impl.ReleaseAttributes;
+import net.shibboleth.idp.consent.flow.ar.impl.AbstractAttributeReleaseAction;
 import net.shibboleth.idp.profile.context.ProfileInterceptorContext;
 import net.shibboleth.utilities.java.support.logic.Constraint;
 
-/**
- * Release attributes post processor
- *
- * @author Yuriy Movchan
- * @version 0.1, 06/22/2020
- */
-public class GluuReleaseAttributesPostProcessor extends ReleaseAttributes {
+public class GluuReleaseAttributesPostProcessor extends AbstractAttributeReleaseAction {
 
 	private final Logger LOG = LoggerFactory.getLogger(GluuReleaseAttributesPostProcessor.class);
 
@@ -28,14 +23,15 @@ public class GluuReleaseAttributesPostProcessor extends ReleaseAttributes {
 	private IdpCustomScriptManager customScriptManager;
 	private IdpExternalScriptService externalScriptService;
 
-    public GluuReleaseAttributesPostProcessor(final IdpConfigurationFactory configurationFactory, final IdpCustomScriptManager customScriptManager) {
+    public GluuReleaseAttributesPostProcessor() {
+    	
+    	configurationFactory = IdpConfigurationFactory.instance(); 
+    	customScriptManager = new IdpCustomScriptManager(configurationFactory, true);
+     
     	LOG.debug("ReleaseAttributesPostProcessor: create");
         Constraint.isNotNull(configurationFactory, "Configuration factory cannot be null");
-        this.configurationFactory = configurationFactory;
-
         Constraint.isNotNull(customScriptManager, "Custom script manager cannot be null");
-        this.customScriptManager = customScriptManager;
-
+ 
         init();
     }
 
@@ -55,6 +51,7 @@ public class GluuReleaseAttributesPostProcessor extends ReleaseAttributes {
 	@Override
 	protected void doExecute(@Nonnull ProfileRequestContext profileRequestContext, @Nonnull ProfileInterceptorContext interceptorContext) {
 		// Execute default flow first
+		LOG.info("Executing external IDP script");
 		super.doExecute(profileRequestContext, interceptorContext);
 
 		// Return if script(s) not exists or invalid
@@ -63,7 +60,7 @@ public class GluuReleaseAttributesPostProcessor extends ReleaseAttributes {
 			return;
 		}
 		
-		LOG.trace("Executing external IDP script");
+		LOG.info("Executing external IDP script");
 		PostProcessAttributesContext context = buildContext();
 		boolean result = this.externalScriptService.executeExternalUpdateAttributesMethod(context);
 
