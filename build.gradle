@@ -40,6 +40,7 @@ dependencies {
     provided "javax.servlet:javax.servlet-api:$project.servletVersion"
     provided "net.shibboleth.idp:idp-authn-api:$project.shibIdpVersion"
     provided "net.shibboleth.idp:idp-saml-api:$project.shibIdpVersion"
+    provided "net.shibboleth.idp:idp-saml-impl:$project.shibIdpVersion"
     provided "net.shibboleth.idp:idp-consent-impl:$project.shibIdpVersion"
     provided "net.shibboleth.idp:idp-attribute-api:$project.shibIdpVersion"
     provided "org.opensaml:opensaml-storage-impl:$project.shibIdpVersion"
