@@ -29,11 +29,11 @@ public class PostProcessAttributesContext implements Serializable {
 		this.releaseAttributesPostProcessor = releaseAttributesPostProcessor;
 	}
 
-	public GluuReleaseAttributesPostProcessor getReleaseAttributesPostProcessor() {
+	public GluuReleaseAttributesPostProcessor getGluuReleaseAttributesPostProcessor() {
 		return releaseAttributesPostProcessor;
 	}
 
-	public void setReleaseAttributesPostProcessor(GluuReleaseAttributesPostProcessor releaseAttributesPostProcessor) {
+	public void setGluuReleaseAttributesPostProcessor(GluuReleaseAttributesPostProcessor releaseAttributesPostProcessor) {
 		this.releaseAttributesPostProcessor = releaseAttributesPostProcessor;
 	}
 
