@@ -38,11 +38,7 @@ public class HealthCheckServlet extends HttpServlet {
     public void init(final ServletConfig config) throws ServletException {
         super.init(config);
 
-        ServletContext context = getServletContext();
-
-        WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(context);
-
-        IdpConfigurationFactory configurationFactory = (IdpConfigurationFactory) applicationContext.getBean("configurationFactory");
+        IdpConfigurationFactory configurationFactory = IdpConfigurationFactory.instance();
 		this.persistenceEntryManager = configurationFactory.getPersistenceEntryManager();
     }
 
