@@ -31,6 +31,7 @@ import org.opensaml.profile.context.ProfileRequestContext;
 import org.opensaml.saml.saml2.core.AuthnContextClassRef;
 import org.opensaml.saml.saml2.core.AuthnRequest;
 import org.opensaml.saml.saml2.core.Issuer;
+import org.opensaml.saml.saml2.core.NameIDPolicy;
 import org.opensaml.saml.saml2.core.RequestedAuthnContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,8 +219,8 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
             customResponseHeaders.put(ExternalAuthentication.CONVERSATION_KEY, convId);
             
             final Map<String, String> customParameters = new HashMap<String, String>();
-            final String relayingPartyId = request.getAttribute(ExternalAuthentication.RELYING_PARTY_PARAM).toString();
-            customParameters.put(OXAUTH_PARAM_ENTITY_ID, relayingPartyId);
+            final String relyingPartyId = request.getAttribute(ExternalAuthentication.RELYING_PARTY_PARAM).toString();
+            customParameters.put(OXAUTH_PARAM_ENTITY_ID, relyingPartyId);
             
             try {
                 ProfileRequestContext prc = ExternalAuthentication.getProfileRequestContext(convId, request);
@@ -235,7 +236,15 @@ public class ShibOxAuthAuthServlet extends HttpServlet {
                             .map(AuthnContextClassRef::getAuthnContextClassRef).collect(Collectors.joining(" "));
                         customParameters.put("acr_values", acrs);
                     }
-                }
+                    NameIDPolicy nameIDPolicy = authnRequest.getNameIDPolicy();
+                    String spNameQualifier;
+                    if (null != nameIDPolicy) {
+                        spNameQualifier = nameIDPolicy.getSPNameQualifier();
+                        if (null == spNameQualifier) {
+                            spNameQualifier = relyingPartyId;
+                        }
+                        customParameters.put("spNameQualifier", spNameQualifier);
+                    }                }
             } catch (Exception e) {
                 LOG.error("Unable to process to AuthnContextClassRef", e);
             }           
